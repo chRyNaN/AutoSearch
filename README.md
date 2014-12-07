@@ -53,4 +53,20 @@ Sets the amount of characters entered into the `<input>` element needed to perfo
 ###customize(element)###
 Sets the layout of each list item in the dropdown. ***element*** is of type **HTMLElement** and will be wrapped in a `<li>` tag and placed within a list. An event handler will be registered to the list item for when an item is selected. Defaults to a single `<p>` tag containing the first **String** within the appropriate item in the dataset. Currently, only way to access the data (for layout) is to use `data[i]` followed by any attribute your aware of, for instance: `data[i].firstName`.
 ###showBold(bool)###
-States whether or not to display the matching items in the dropdown in bold. 
+States whether or not to display the matching items in the dropdown in bold. ***bool*** is of type **Boolean**.
+
+Event Handlers
+==========
+
+###onresults###
+Called when results were successfully received from the remote resource. This is called before the results have been filtered. Event.data will contain the results, for instance:
+```javascript
+search.onresults = function(event){
+    var data = event.data;
+}
+```
+###onsortedremote###
+Called after the remote data has been sorted.
+###onsortedlocal###
+Called after the local data has been sorted.
+
