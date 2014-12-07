@@ -52,6 +52,8 @@ Sets the local data. ***source*** is an **Array** which contains the data to be 
 Sets the amount of characters entered into the `<input>` element needed to perform the search. ***amount*** is of type **Number** but will be lenient and allow a **String** to be entered. In this case, the **String** will be converted to the appropriate number. Defaults to 3.
 ###customize(element)###
 Sets the layout of each list item in the dropdown. ***element*** is of type **HTMLElement** and will be wrapped in a `<li>` tag and placed within a list. An event handler will be registered to the list item for when an item is selected. Defaults to a single `<p>` tag containing the first **String** within the appropriate item in the dataset. Currently, only way to access the data (for layout) is to use `data[i]` followed by any attribute your aware of, for instance: `data[i].firstName`.
+###setHighlightColor(color)###
+Sets the color of a list item when focused on. ***color*** is of type **String** and is a **CSS** appropriate color value. Defaults to rgba(33, 150, 243, 0.4).
 ###showBold(bool)###
 States whether or not to display the matching items in the dropdown in bold. ***bool*** is of type **Boolean**. Defaults to true.
 
