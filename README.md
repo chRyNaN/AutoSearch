@@ -45,5 +45,12 @@ Methods
 ==========
 
 ###remoteSource(source)###
-Sets the location of the server-side component. ***source*** is of type **String** and is the location of the resource to access. The remote source is accessed using a **GET** request. Therefore, this can be set to a **REST** service.
-
+Sets the location of the server-side data. ***source*** is of type **String** and is the location of the resource to access. The remote source is accessed using a **GET** request. Therefore, this can be set to a **REST** service. Note: The dropdown with the search results will not display unless remote and/or local data has been set with the *remoteSource* and *localSource* methods.
+###localSource(source)###
+Sets the local data. ***source*** is an **Array** which contains the data to be accessed. Note: The dropdown with the search results will not display unless remote and/or local data has been set with the *remoteSource* and *localSource* methods.
+###setMinCharacters(amount)###
+Sets the amount of characters entered into the `<input>` element needed to perform the search. ***amount*** is of type **Number** but will be lenient and allow a **String** to be entered. In this case, the **String** will be converted to the appropriate number. Defaults to 3.
+###customize(element)###
+Sets the layout of each list item in the dropdown. ***element*** is of type **HTMLElement** and will be wrapped in a `<li>` tag and placed within a list. An event handler will be registered to the list item for when an item is selected. Defaults to a single `<p>` tag containing the first **String** within the appropriate item in the dataset. Currently, only way to access the data (for layout) is to use `data[i]` followed by any attribute your aware of, for instance: `data[i].firstName`.
+###showBold(bool)###
+States whether or not to display the matching items in the dropdown in bold. 
