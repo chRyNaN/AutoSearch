@@ -1,6 +1,7 @@
+
 var AutoSearch = (function(element){
 	var highlightColor = "rgba(33, 150, 243, 0.4)", startAmount = 3, bold = true, VERSION = "0.0.1";
-	var input = "", searchBox = {}, searchDropdown = {}, cache = [];
+	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [];
 	
 	function init(){
 		if (typeof Bootstrap === 'undefined'){
@@ -25,10 +26,35 @@ var AutoSearch = (function(element){
 		searchBox.addEventListener('keydown', keyDownEvent);
 		searchBox.addEventListener('keyup', keyUpEvent);
 	}
+	init();
+	
+	
+	var returnObject = {
+			//public methods
+			remoteSource: function(source){
+				remoteLocation = source;
+			},
+			localSource: function(source){
+				local = source;
+			},
+			setMinCharacters: function(a){
+				startAmount = a;
+			},
+			customize: "customize(element)",
+			setHighlightColor: function(color){
+				if (typeof color !== 'string') return;
+				highlightColor = color;
+			},
+			showBold: function(bool){
+				if (typeof bool !== 'boolean') return;
+				bold = bool;
+			}
+	};
+
 	
 	function getSearchResults(searchString){
 		$.ajax({
-			url: "http://localhost:8080/UserInterface/rs/user/search/" + searchString,
+			url: (typeof remoteLocation !== 'undefined') ? (remoteLocation + searchString) : searchString,
 			type: "GET",
 			success: function (data){
 				data = JSON.parse(data);
@@ -67,7 +93,7 @@ var AutoSearch = (function(element){
 		if (bold) turnLettersBold();
 		openDropdown();
 	}
-
+	
 	function turnLettersBold(){
 		var letters = searchBox.value;
 		if (!searchDropdown.hasChildNodes()) return;
@@ -156,9 +182,12 @@ var AutoSearch = (function(element){
 	function inputEvent(event){
 		input = event.target.value;
 		if (input.length > startAmount){
-			if (needsUpdate(cache)) getSearchResults(input);
-			if (cache.length > 1) cache = quicksort(cache);
-			displayDropdown(cache);
+			if (needsUpdate(cache)){
+				getSearchResults(input);
+			}else{
+				if (cache.length > 1) cache = quicksort(cache);
+				displayDropdown(cache);
+			}
 		}else{
 			clearDropdown();
 		}
@@ -280,18 +309,6 @@ var AutoSearch = (function(element){
 		
 		return quicksort(left).concat(pivot, quicksort(right));
 	}
-	
-	
-	
-	var returnObject = {
-			//public methods
-			remoteSource: "remoteSource(source)",
-			localSource: "localSource(source)",
-			setMinCharacters: "setMinCharacters(amount)",
-			customize: "customize(element)",
-			setHighlightColor: "setHighlightColor(color)",
-			showBold: "showBold(bool)"
-	};
 	
 	return returnObject;
 	
