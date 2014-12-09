@@ -1,7 +1,7 @@
 
 var AutoSearch = (function(element){
 	var highlightColor = "rgba(33, 150, 243, 0.4)", startAmount = 3, bold = true, VERSION = "0.0.1";
-	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [], attrs = [];
+	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [], attrs = [], htmlString;
 	
 	function init(){
 		if (typeof Bootstrap === 'undefined'){
@@ -19,6 +19,9 @@ var AutoSearch = (function(element){
 		}
 		searchDropdown = document.createElement("ul");
 		searchDropdown.className = "dropdown-menu list-group";
+		searchDropdown.style.maxHeight = "200px";
+		searchDropdown.style.height = "auto";
+		searchDropdown.style.overflowX = "hidden";
 		//add dropdown to parent and add event listeners to the input box
 		searchBox.parentNode.appendChild(searchDropdown);
 		searchBox.addEventListener('input', inputEvent);
@@ -39,7 +42,9 @@ var AutoSearch = (function(element){
 			setMinCharacters: function(a){
 				startAmount = a;
 			},
-			customize: "customize(element)", //TODO
+			customize: function(str){
+				htmlString = str;
+			},
 			setHighlightColor: function(color){
 				if (typeof color !== 'string') return;
 				highlightColor = color;
@@ -96,7 +101,22 @@ var AutoSearch = (function(element){
 	}
 	
 	function createDropdownItems(data){
-		//TODO
+		var parser = new DOMParser, doc, li, d, listItems = [];
+		for (var i = 0; i <data.length; i++){
+			if (htmlString === 'undefined'){
+				htmlString = "<span>" + d + "</span>";
+			}
+			li = document.createElement("li");
+			li.className = "list-group-item";
+			d = data[i];
+			doc = parser.parseFromString(htmlString, "text/html");
+			li.appendChild(doc.body.firstChild);
+			li.addEventHandler("mouseeneter", mouseEnterEvent);
+			li.addEventHandler("mouseleave", mouseLeaveEvent);
+			li.addEventListener("click", itemClicked);
+			listItems.push(li);
+		}
+		return listItems;
 	}
 	
 	function displayDropdown(data){
@@ -279,6 +299,10 @@ var AutoSearch = (function(element){
 		
 	}
 
+	function itemClicked(event){
+		//TODO
+	}
+	
 	function getDistance(a, b){
 		//Levenshtein Distance between two strings
 		if(a.length === 0) return b.length;
