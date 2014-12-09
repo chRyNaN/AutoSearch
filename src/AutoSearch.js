@@ -1,7 +1,7 @@
 
 var AutoSearch = (function(element){
 	var highlightColor = "rgba(33, 150, 243, 0.4)", startAmount = 3, bold = true, VERSION = "0.0.1";
-	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [];
+	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [], attrs = [];
 	
 	function init(){
 		if (typeof Bootstrap === 'undefined'){
@@ -26,7 +26,6 @@ var AutoSearch = (function(element){
 		searchBox.addEventListener('keydown', keyDownEvent);
 		searchBox.addEventListener('keyup', keyUpEvent);
 	}
-	init();
 	
 	
 	var returnObject = {
@@ -40,7 +39,7 @@ var AutoSearch = (function(element){
 			setMinCharacters: function(a){
 				startAmount = a;
 			},
-			customize: "customize(element)",
+			customize: "customize(element)", //TODO
 			setHighlightColor: function(color){
 				if (typeof color !== 'string') return;
 				highlightColor = color;
@@ -48,6 +47,9 @@ var AutoSearch = (function(element){
 			showBold: function(bool){
 				if (typeof bool !== 'boolean') return;
 				bold = bool;
+			},
+			searchAttributes: function(a){
+				attrs = a;
 			}
 	};
 
@@ -65,16 +67,24 @@ var AutoSearch = (function(element){
 	}
 
 	function filter(data){
-		//TODO more general
-		var obj, firstNameDist, lastNameDist, userNameDist;
+		var obj, temp;
 		for (var i = 0; i < data.length; i++){
 			obj = {};
-			obj.user = data[i];
-			firstNameDist = getDistance(data[i].firstName, input);
-			lastNameDist = getDistance(data[i].lastName, input);
-			userNameDist = getDistance(data[i].userName, input);
-			obj.distance = Math.min(firstNameDist, Math.min(lastNameDist, userNameDist));
-			data[i] = obj;
+			obj.data = data[i];
+			if (attrs.length < 1){
+				obj.distance = getDistance(data[i], input);
+				data[i] = obj;
+			}else{
+				for (var j = 0; j < attrs.length; j++){
+					temp = data[i];
+					if (j != 0){
+						obj.distance = Math.min(obj.distance, getDistance(temp[attrs[j]]));
+					}else{
+						obj.distance = getDistance(temp[attrs[j]]);
+					}
+					data[i] = obj;
+				}
+			}
 		}
 		//sort the results
 		if (data.length > 1){
@@ -85,7 +95,12 @@ var AutoSearch = (function(element){
 		displayDropdown(data);
 	}
 	
+	function createDropdownItems(data){
+		//TODO
+	}
+	
 	function displayDropdown(data){
+		clearDropdown();
 		var items = createDropdownItems(data);
 		for (var i = 0; i < items.length; i++){
 			searchDropdown.appendChild(items[i]);
@@ -143,11 +158,15 @@ var AutoSearch = (function(element){
 	}
 
 	function closeDropdown(){
-		searchDropdown.classList.remove('open');
+		if (searchDropdown.classList.contains('open')){
+			searchDropdown.classList.remove('open');
+		}
 	}
 
 	function openDropdown(){
-		searchDropdown.classList.add('open');
+		if (!searchDropdown.classList.contains('open')){
+			searchDropdown.classList.add('open');
+		}
 	}
 
 	function getSelected(){
@@ -310,6 +329,7 @@ var AutoSearch = (function(element){
 		return quicksort(left).concat(pivot, quicksort(right));
 	}
 	
+	init();
 	return returnObject;
 	
 })(element);
