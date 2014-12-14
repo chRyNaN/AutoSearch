@@ -1,10 +1,12 @@
 
 var AutoSearch = (function(element){
 	var highlightColor = "rgba(33, 150, 243, 0.4)", startAmount = 3, bold = true, VERSION = "0.0.1";
-	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [], attrs = [], htmlString;
+	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [], attrs = [], htmlString = "";
 	
 	function init(){
-		if (typeof Bootstrap === 'undefined'){
+		if (typeof $ === 'undefined'){
+			console.log("JQuery is a required dependancy.");
+		}else if (typeof $.fn.dropdown === 'undefined'){
 			console.error("Bootstrap is a required dependancy.");
 			return;
 		}
@@ -25,6 +27,7 @@ var AutoSearch = (function(element){
 		//add dropdown to parent and add event listeners to the input box
 		searchBox.parentNode.appendChild(searchDropdown);
 		searchBox.addEventListener('input', inputEvent);
+		searchBox.addEventListener('focus', focusEvent);
 		searchBox.addEventListener('blur', blurEvent);
 		searchBox.addEventListener('keydown', keyDownEvent);
 		searchBox.addEventListener('keyup', keyUpEvent);
@@ -34,6 +37,7 @@ var AutoSearch = (function(element){
 	var returnObject = {
 			//public methods
 			remoteSource: function(source){
+				console.log("remoteSource: " + source);
 				remoteLocation = source;
 			},
 			localSource: function(source){
@@ -65,6 +69,12 @@ var AutoSearch = (function(element){
 			type: "GET",
 			success: function (data){
 				data = JSON.parse(data);
+				if (!Array.isArray(data)){
+					var temp = [];
+					temp.push(data);
+					data = temp;
+				}
+				console.log("search results: " + JSON.stringify(data));
 				//TODO onresults event handler
 				filter(data);
 			}
@@ -77,15 +87,16 @@ var AutoSearch = (function(element){
 			obj = {};
 			obj.data = data[i];
 			if (attrs.length < 1){
-				obj.distance = getDistance(data[i], input);
+				var keys = Object.keys(data[i]);
+				obj.distance = getDistance(keys[0].substring(0, input.length), input);
 				data[i] = obj;
 			}else{
 				for (var j = 0; j < attrs.length; j++){
 					temp = data[i];
 					if (j != 0){
-						obj.distance = Math.min(obj.distance, getDistance(temp[attrs[j]]));
+						obj.distance = Math.min(obj.distance, getDistance(temp[attrs[j]].substring(0, input.length)));
 					}else{
-						obj.distance = getDistance(temp[attrs[j]]);
+						obj.distance = getDistance(temp[attrs[j]].substring(0, input.length));
 					}
 					data[i] = obj;
 				}
@@ -101,28 +112,35 @@ var AutoSearch = (function(element){
 	}
 	
 	function createDropdownItems(data){
+		console.log("createDropdownItems: data: " + JSON.stringify(data));
 		var parser = new DOMParser, doc, li, d, listItems = [];
-		for (var i = 0; i <data.length; i++){
-			if (htmlString === 'undefined'){
-				htmlString = "<span>" + d + "</span>";
+		for (var i = 0; i < data.length; i++){ 
+			d = data[i].data;
+			console.log("htmlString.length = " + htmlString.length);
+			if (htmlString.length < 1){
+				console.log("htmlString = undefined");
+				htmlString = "<span>" + JSON.stringify(d) + "</span>";
 			}
 			li = document.createElement("li");
 			li.className = "list-group-item";
-			d = data[i];
 			doc = parser.parseFromString(htmlString, "text/html");
 			li.appendChild(doc.body.firstChild);
-			li.addEventHandler("mouseeneter", mouseEnterEvent);
-			li.addEventHandler("mouseleave", mouseLeaveEvent);
+			li.addEventListener("mouseenter", mouseEnterEvent);
+			li.addEventListener("mouseleave", mouseLeaveEvent);
 			li.addEventListener("click", itemClicked);
 			listItems.push(li);
+			console.log("listItems.length = " + listItems.length);
+			console.log("li.innerHTML: " + li.innerHTML);
 		}
 		return listItems;
 	}
 	
 	function displayDropdown(data){
+		console.log("displayDropdown: data: " + JSON.stringify(data));
 		clearDropdown();
 		var items = createDropdownItems(data);
 		for (var i = 0; i < items.length; i++){
+			console.log("items[i]: " + items[i]);
 			searchDropdown.appendChild(items[i]);
 		}
 		if (bold) turnLettersBold();
@@ -185,7 +203,9 @@ var AutoSearch = (function(element){
 
 	function openDropdown(){
 		if (!searchDropdown.classList.contains('open')){
+			console.log("open dropdown");
 			searchDropdown.classList.add('open');
+			$("navbar-search").dropdown("toggle");
 		}
 	}
 
@@ -220,6 +240,7 @@ var AutoSearch = (function(element){
 
 	function inputEvent(event){
 		input = event.target.value;
+		console.log("input event: input: " + input);
 		if (input.length > startAmount){
 			if (needsUpdate(cache)){
 				getSearchResults(input);
@@ -232,6 +253,12 @@ var AutoSearch = (function(element){
 		}
 	}
 
+	function focusEvent(event){
+		console.log("focusEvent");
+		event.preventDefault();
+		event.stopPropagation();
+	}
+	
 	function blurEvent(event){
 		console.log("onBlur");
 		searchBox.value = "";
@@ -356,4 +383,4 @@ var AutoSearch = (function(element){
 	init();
 	return returnObject;
 	
-})(element);
+});
