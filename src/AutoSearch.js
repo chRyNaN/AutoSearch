@@ -1,6 +1,6 @@
 
 var AutoSearch = (function(element){
-	var highlightColor = "rgba(33, 150, 243, 0.4)", startAmount = 3, bold = true, VERSION = "0.0.1", thisSearch = this;
+	var highlightColor = "rgba(33, 150, 243, 0.4)", startAmount = 3, bold = true, VERSION = "0.0.1";
 	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [], attrs = [], htmlString = "";
 	
 	function init(){
@@ -78,14 +78,17 @@ var AutoSearch = (function(element){
 					data = temp;
 				}
 				console.log("search results: " + JSON.stringify(data));
-				thisSearch.dispatchEvent(CustomEvent('selected', false, true, {'detail': data}));
+				searchBox.dispatchEvent(new CustomEvent('results', false, true, {'detail': data}));
 				if (local.length >= 1){//local and remote
 					var d = [];
 					d.push(local);
 					d.push(data);
 					cache = filter(d);
+					sortedLocal(cache);
+					sortedRemote(cache);
 				}else{
 					cache = filter(data);
+					sortedRemote(cache);
 				}
 				displayDropdown(cache);
 			}
@@ -276,13 +279,17 @@ var AutoSearch = (function(element){
 						d.push(local);
 						d.push(cache);
 						cache = filter(d);
+						sortedLocal(cache);
+						sortedRemote(cache);
 					}else{
 						cache = filter(cache);
+						sortedRemote(cache);
 					}
 					displayDropdown(cache);
 				}
 			}else if (local.length >= 1){//local
 				local = filter(local);
+				sortedLocal(local);
 				displayDropdown(local);
 			}
 			
@@ -358,9 +365,17 @@ var AutoSearch = (function(element){
 		
 	}
 	
+	function sortedLocal(data){
+		searchBox.dispatchEvent(new CustomEvent('sortedlocal', false, true, {'detail': data}));
+	}
+	
+	function sortedRemote(data){
+		searchBox.dispatchEvent(new CustomEvent('sortedremote', false, true, {'detail': data}));
+	}
+	
 	function itemClicked(event){
 		var clickedEvent = CustomEvent('selected', false, true, {'detail': event.data});
-		thisSearch.dispatchEvent(clickedEvent);
+		searchBox.dispatchEvent(clickedEvent);
 	}
 	
 	function getDistance(a, b){
