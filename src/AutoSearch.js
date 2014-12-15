@@ -24,10 +24,12 @@ var AutoSearch = (function(element){
 		searchDropdown.style.maxHeight = "200px";
 		searchDropdown.style.height = "auto";
 		searchDropdown.style.overflowX = "hidden";
+		searchDropdown.style.marginLeft = "5px";
+		searchDropdown.style.marginRight = "5px";
+		searchDropdown.style.padding = "0px";
 		//add dropdown to parent and add event listeners to the input box
 		searchBox.parentNode.appendChild(searchDropdown);
 		searchBox.addEventListener('input', inputEvent);
-		searchBox.addEventListener('focus', focusEvent);
 		searchBox.addEventListener('blur', blurEvent);
 		searchBox.addEventListener('keydown', keyDownEvent);
 		searchBox.addEventListener('keyup', keyUpEvent);
@@ -113,24 +115,28 @@ var AutoSearch = (function(element){
 	
 	function createDropdownItems(data){
 		console.log("createDropdownItems: data: " + JSON.stringify(data));
-		var parser = new DOMParser, doc, li, d, listItems = [];
+		var parser = new DOMParser(), doc, li, d, listItems = [], str;
 		for (var i = 0; i < data.length; i++){ 
 			d = data[i].data;
-			console.log("htmlString.length = " + htmlString.length);
 			if (htmlString.length < 1){
-				console.log("htmlString = undefined");
-				htmlString = "<span>" + JSON.stringify(d) + "</span>";
+				if (attrs.length < 1){
+					var keys = Object.keys(d);
+					str = "<span>" + JSON.stringify(d[keys[0]]) + "</span>";
+				}else{
+					str = "<span>" + d[attrs[0]] + "</span>";
+				}
+			}else{
+				str = htmlString;
 			}
 			li = document.createElement("li");
 			li.className = "list-group-item";
-			doc = parser.parseFromString(htmlString, "text/html");
+			li.style.padding = "5px";
+			doc = parser.parseFromString(str, "text/html");
 			li.appendChild(doc.body.firstChild);
 			li.addEventListener("mouseenter", mouseEnterEvent);
 			li.addEventListener("mouseleave", mouseLeaveEvent);
 			li.addEventListener("click", itemClicked);
 			listItems.push(li);
-			console.log("listItems.length = " + listItems.length);
-			console.log("li.innerHTML: " + li.innerHTML);
 		}
 		return listItems;
 	}
@@ -150,24 +156,35 @@ var AutoSearch = (function(element){
 	function turnLettersBold(){
 		var letters = searchBox.value;
 		if (!searchDropdown.hasChildNodes()) return;
-		var children = searchDropdown.childNodes;
-		var h, p;
-		//TODO more general 
+		console.log("turnLettersBold()");
+		var children = searchDropdown.childNodes;//li items
 		for (var i = 0; i < children.length; i++){
-			h = children[i].getElementsByTagName("h4");
-			p = children[i].getElementsByTagName("p");
-			if (h.length >= 1) lettersToBold(h[0], letters);
-			if (p.length >= 1) lettersToBold(p[0], letters);
+			if (children[i].hasChildNodes()){
+				var grandChildren = children[i].childNodes;//html elements in li items
+				for (var j = 0; j < grandChildren.length; j++){
+					if (grandChildren[j].hasChildNodes()){
+						var greatGrandChildren = grandChildren[j].childNodes;//inner nodes of htmlelements
+						for (var k = 0; k < greatGrandChildren.length; k++){
+							if (greatGrandChildren[k].nodeType == 3){//text node
+								console.log("text node");
+								lettersToBold(grandChildren[j], letters);
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
 	function lettersToBold(element, letters){
+		console.log("lettersToBold");
 		if (typeof letters !== 'string') return;
 		if (!(element instanceof HTMLElement)) return;
 		var s = document.createElement('span'), t = document.createElement('span');
 		s.style.fontWeight = "bolder";
 		//remove previous spans within the element
 		var str = element.textContent;
+		console.log("element.textContent = " + str);
 		element.innerHTML = "";
 		str = str.toLowerCase();
 		letters = letters.toLowerCase();
@@ -203,9 +220,8 @@ var AutoSearch = (function(element){
 
 	function openDropdown(){
 		if (!searchDropdown.classList.contains('open')){
-			console.log("open dropdown");
 			searchDropdown.classList.add('open');
-			$("navbar-search").dropdown("toggle");
+			$(searchDropdown).dropdown("toggle");
 		}
 	}
 
@@ -233,8 +249,8 @@ var AutoSearch = (function(element){
 		}
 	}
 
-	function needsUpdate(data){
-		if (cache.length <= 1 || cache[0].distance < 0.5) return true;
+	function needsUpdate(){
+		if (typeof cache === 'undefined' || cache.length <= 1 || cache[0].distance < 0.5) return true;
 		return false;
 	}
 
@@ -242,21 +258,21 @@ var AutoSearch = (function(element){
 		input = event.target.value;
 		console.log("input event: input: " + input);
 		if (input.length > startAmount){
-			if (needsUpdate(cache)){
-				getSearchResults(input);
-			}else{
-				if (cache.length > 1) cache = quicksort(cache);
-				displayDropdown(cache);
+			if (local.length < 1 && remoteLocation.length < 1) return; //nothing to search
+			if (remoteLocation.length >= 1){//remote
+				if (needsUpdate()){
+					getSearchResults(input);
+				}else{
+					filter(cache);
+				}
+			}else if (local.length >= 1){//local
+				local = quicksort(local);
+				displayDropdown(local);
 			}
+			
 		}else{
 			clearDropdown();
 		}
-	}
-
-	function focusEvent(event){
-		console.log("focusEvent");
-		event.preventDefault();
-		event.stopPropagation();
 	}
 	
 	function blurEvent(event){
@@ -297,9 +313,10 @@ var AutoSearch = (function(element){
 		var current;
 		//remove items selected
 		unSelectAllItems();
-		
+		console.log("keycode = " + key);
 		switch(key){
-		case ('40'):
+		case (40):
+			console.log("key = 40");
 			//down arrow was pressed
 			if (typeof selected === 'undefined' || selected == searchDropdown.lastChild){
 				current = listItems[0];
@@ -308,7 +325,7 @@ var AutoSearch = (function(element){
 			}		
 			setSelected(current);
 		break;
-		case ('38'):
+		case (38):
 			//up arrow was pressed
 			if (typeof selected === 'undefined' || selected == searchDropdown.firstChild){
 				current = listItems[listItems.length - 1];
@@ -317,7 +334,7 @@ var AutoSearch = (function(element){
 			}
 			setSelected(current);
 		break;
-		case ('13'):
+		case (13):
 			//enter key was pressed
 			var gS = getSelected();
 			if (typeof gS !== 'undefined') gS.click();
