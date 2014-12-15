@@ -1,11 +1,12 @@
 
 var AutoSearch = (function(element){
-	var highlightColor = "rgba(33, 150, 243, 0.4)", startAmount = 3, bold = true, VERSION = "0.0.1";
+	var highlightColor = "rgba(33, 150, 243, 0.4)", startAmount = 3, bold = true, VERSION = "0.0.1", thisSearch = this;
 	var input = "", searchBox = {}, searchDropdown = {}, cache = [], remoteLocation, local = [], attrs = [], htmlString = "";
 	
 	function init(){
 		if (typeof $ === 'undefined'){
 			console.log("JQuery is a required dependancy.");
+			return;
 		}else if (typeof $.fn.dropdown === 'undefined'){
 			console.error("Bootstrap is a required dependancy.");
 			return;
@@ -77,12 +78,20 @@ var AutoSearch = (function(element){
 					data = temp;
 				}
 				console.log("search results: " + JSON.stringify(data));
-				//TODO onresults event handler
-				filter(data);
+				thisSearch.dispatchEvent(CustomEvent('selected', false, true, {'detail': data}));
+				if (local.length >= 1){//local and remote
+					var d = [];
+					d.push(local);
+					d.push(data);
+					cache = filter(d);
+				}else{
+					cache = filter(data);
+				}
+				displayDropdown(cache);
 			}
 		});
 	}
-
+	
 	function filter(data){
 		var obj, temp;
 		for (var i = 0; i < data.length; i++){
@@ -106,11 +115,10 @@ var AutoSearch = (function(element){
 		}
 		//sort the results
 		if (data.length > 1){
-			cache = quicksort(data);
-			displayDropdown(cache);
+			data = quicksort(data);
 		}
-		//display the results
-		displayDropdown(data);
+		
+		return data;
 	}
 	
 	function createDropdownItems(data){
@@ -263,10 +271,18 @@ var AutoSearch = (function(element){
 				if (needsUpdate()){
 					getSearchResults(input);
 				}else{
-					filter(cache);
+					if (local.length >= 1){//local and remote via cache
+						var d = [];
+						d.push(local);
+						d.push(cache);
+						cache = filter(d);
+					}else{
+						cache = filter(cache);
+					}
+					displayDropdown(cache);
 				}
 			}else if (local.length >= 1){//local
-				local = quicksort(local);
+				local = filter(local);
 				displayDropdown(local);
 			}
 			
@@ -276,7 +292,6 @@ var AutoSearch = (function(element){
 	}
 	
 	function blurEvent(event){
-		console.log("onBlur");
 		searchBox.value = "";
 		clearDropdown();
 	}
@@ -321,7 +336,7 @@ var AutoSearch = (function(element){
 			if (typeof selected === 'undefined' || selected == searchDropdown.lastChild){
 				current = listItems[0];
 			}else{
-				current = (selected.nextSibling !== 'null') ? selected.nextSibling : listItems[0];
+				current = (selected.nextSibling != null) ? selected.nextSibling : listItems[0];
 			}		
 			setSelected(current);
 		break;
@@ -330,7 +345,7 @@ var AutoSearch = (function(element){
 			if (typeof selected === 'undefined' || selected == searchDropdown.firstChild){
 				current = listItems[listItems.length - 1];
 			}else{
-				current = (selected.previousSibling !== 'null') ? selected.previousSibling : listItems[listItems.length - 1];
+				current = (selected.previousSibling != null) ? selected.previousSibling : listItems[listItems.length - 1];
 			}
 			setSelected(current);
 		break;
@@ -342,9 +357,10 @@ var AutoSearch = (function(element){
 		}
 		
 	}
-
+	
 	function itemClicked(event){
-		//TODO
+		var clickedEvent = CustomEvent('selected', false, true, {'detail': event.data});
+		thisSearch.dispatchEvent(clickedEvent);
 	}
 	
 	function getDistance(a, b){
