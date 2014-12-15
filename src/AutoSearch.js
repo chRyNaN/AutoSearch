@@ -38,6 +38,11 @@ var AutoSearch = (function(element){
 	
 	
 	var returnObject = {
+			//listeners
+			onresults: null,
+			onsortedlocal: null,
+			onsortedremote: null,
+			onselected: null,
 			//public methods
 			remoteSource: function(source){
 				console.log("remoteSource: " + source);
@@ -64,7 +69,6 @@ var AutoSearch = (function(element){
 				attrs = a;
 			}
 	};
-
 	
 	function getSearchResults(searchString){
 		$.ajax({
@@ -78,17 +82,17 @@ var AutoSearch = (function(element){
 					data = temp;
 				}
 				console.log("search results: " + JSON.stringify(data));
-				searchBox.dispatchEvent(new CustomEvent('results', false, true, {'detail': data}));
+				triggerEvent("results", data);
 				if (local.length >= 1){//local and remote
 					var d = [];
 					d.push(local);
 					d.push(data);
 					cache = filter(d);
-					sortedLocal(cache);
-					sortedRemote(cache);
+					triggerEvent("sortedlocal", cache);
+					triggerEvent("sortedremote", cache);
 				}else{
 					cache = filter(data);
-					sortedRemote(cache);
+					triggerEvent("sortedremote", cache);
 				}
 				displayDropdown(cache);
 			}
@@ -279,17 +283,17 @@ var AutoSearch = (function(element){
 						d.push(local);
 						d.push(cache);
 						cache = filter(d);
-						sortedLocal(cache);
-						sortedRemote(cache);
+						triggerEvent("sortedlocal", cache);
+						triggerEvent("sortedremote", cache);
 					}else{
 						cache = filter(cache);
-						sortedRemote(cache);
+						triggerEvent("sortedremote", cache);
 					}
 					displayDropdown(cache);
 				}
 			}else if (local.length >= 1){//local
 				local = filter(local);
-				sortedLocal(local);
+				triggerEvent("sortedlocal", local);
 				displayDropdown(local);
 			}
 			
@@ -365,17 +369,27 @@ var AutoSearch = (function(element){
 		
 	}
 	
-	function sortedLocal(data){
-		searchBox.dispatchEvent(new CustomEvent('sortedlocal', false, true, {'detail': data}));
-	}
-	
-	function sortedRemote(data){
-		searchBox.dispatchEvent(new CustomEvent('sortedremote', false, true, {'detail': data}));
+	function triggerEvent(type, data){
+		var event = new CustomEvent(type, false, true, {'detail': data});
+		switch(type){
+		case 'results':
+			if (returnObject.onresults != null) returnObject.onresults(event);
+			break;
+		case 'sortedlocal':
+			if (returnObject.onsortedlocal != null) returnObject.onsortedlocal(event);
+			break;
+		case 'sortedremote':
+			if (returnObject.onsortedremote != null) returnObject.onsortedremote(event);
+			break;
+		case 'selected':
+			if (returnObject.onselecte != null) returnObject.onselected(event);
+			break;			
+		}
+		searchBox.dispatchEvent(event);
 	}
 	
 	function itemClicked(event){
-		var clickedEvent = CustomEvent('selected', false, true, {'detail': event.data});
-		searchBox.dispatchEvent(clickedEvent);
+		triggerEvent("selected", event.data);
 	}
 	
 	function getDistance(a, b){
