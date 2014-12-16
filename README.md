@@ -11,8 +11,7 @@ The reason for this auto-complete implementation is to provide a very simple and
 Work Needed
 ==========
 
-* Stop dropdown from displaying once the input field was selected. Instead, open it up when results are ready.
-* Fix arrow key movement. Seemed to work before, but now (at least when only one item), arrow keys are ignored.
+* Fix customize method. Need way to access data. 
 * Find way to get dropdown to work outside of navbar.
 
 Development Rules
@@ -45,6 +44,30 @@ Functionality
 * Accepts local and/or remote data.
 * As the user types, it will automatically filter through the data and display the most relevant results.
 
+Examples
+==========
+
+###Set up the HTML###
+```html
+<div class="navbar">
+  <form class="navbar-form">
+    <input id="navbar-search" type="search" class="form-control dropdown-toggle" placeholder="search" autocomplete="off"></input>
+  </form>
+</div>
+```
+* Make sure **NOT** to include Bootstrap's *data-toggle="dropdown"*. ***AutoSearch*** manually opens and closes the dropdown when needed.
+* Make sure to include *autocomplete="off"*. This cancels the browsers default cached results from displaying. 
+* The above code will place a input into a navigation bar. 
+
+###Local###
+```javascript
+var search = new AutoSearch(document.getElementById("navbar-search"));
+var arr = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+search.localSource(arr);
+
+API Reference
+==========
+
 Constructor
 ==========
 
@@ -76,7 +99,7 @@ Event Handlers
 Called when results were successfully received from the remote resource. This is called before the results have been filtered. Event.data will contain the results, for instance:
 ```javascript
 search.onresults = function(event){
-    var data = event.data;
+    var data = event.detail.data;
 }
 ```
 ###onsortedremote###
