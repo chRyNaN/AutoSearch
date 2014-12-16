@@ -129,7 +129,6 @@ var AutoSearch = (function(element){
 	}
 	
 	function createDropdownItems(data){
-		console.log("createDropdownItems: data: " + JSON.stringify(data));
 		var parser = new DOMParser(), doc, li, d, listItems = [], str;
 		for (var i = 0; i < data.length; i++){ 
 			d = data[i].data;
@@ -141,7 +140,19 @@ var AutoSearch = (function(element){
 					str = "<span>" + d[attrs[0]] + "</span>";
 				}
 			}else{
-				str = htmlString;
+				var endingArray = [];
+				str = htmlString.replace(/data(?=\.|\[)/, function(match, offset, string){
+					var endIndex = string.substring(offset).search(/\]|\s|</) + offset;
+					var ending = string.substring(offset + match.length, endIndex + 1);//last parameter is exclusive
+					if (endingArray.indexOf(ending) == -1) endingArray.push(ending);
+					return d[ending.substring(1, ending.length - 1)];
+				});
+				//now remove all the endings, ex: .firstName
+				for (var i = 0; i < endingArray.length; i++){
+					endingArray[i] = (endingArray[i].charAt(endingArray[i].length - 1) === "<") ? 
+							endingArray[i].substring(0, endingArray[i].length - 1) : endingArray[i];
+					str = str.replace(endingArray[i], "");
+				}
 			}
 			li = document.createElement("li");
 			li.className = "list-group-item";
@@ -157,11 +168,9 @@ var AutoSearch = (function(element){
 	}
 	
 	function displayDropdown(data){
-		console.log("displayDropdown: data: " + JSON.stringify(data));
 		clearDropdown();
 		var items = createDropdownItems(data);
 		for (var i = 0; i < items.length; i++){
-			console.log("items[i]: " + items[i]);
 			searchDropdown.appendChild(items[i]);
 		}
 		if (bold) turnLettersBold();
@@ -171,7 +180,6 @@ var AutoSearch = (function(element){
 	function turnLettersBold(){
 		var letters = searchBox.value;
 		if (!searchDropdown.hasChildNodes()) return;
-		console.log("turnLettersBold()");
 		var children = searchDropdown.childNodes;//li items
 		for (var i = 0; i < children.length; i++){
 			if (children[i].hasChildNodes()){
@@ -181,7 +189,6 @@ var AutoSearch = (function(element){
 						var greatGrandChildren = grandChildren[j].childNodes;//inner nodes of htmlelements
 						for (var k = 0; k < greatGrandChildren.length; k++){
 							if (greatGrandChildren[k].nodeType == 3){//text node
-								console.log("text node");
 								lettersToBold(grandChildren[j], letters);
 							}
 						}
@@ -192,14 +199,12 @@ var AutoSearch = (function(element){
 	}
 
 	function lettersToBold(element, letters){
-		console.log("lettersToBold");
 		if (typeof letters !== 'string') return;
 		if (!(element instanceof HTMLElement)) return;
 		var s = document.createElement('span'), t = document.createElement('span');
 		s.style.fontWeight = "bolder";
 		//remove previous spans within the element
 		var str = element.textContent;
-		console.log("element.textContent = " + str);
 		element.innerHTML = "";
 		str = str.toLowerCase();
 		letters = letters.toLowerCase();

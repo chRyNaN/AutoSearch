@@ -87,7 +87,7 @@ Sets the local data. ***source*** is an **Array** which contains the data to be 
 ###setMinCharacters(amount)###
 Sets the amount of characters entered into the `<input>` element needed to perform the search. ***amount*** is of type **Number** but will be lenient and allow a **String** to be entered. In this case, the **String** will be converted to the appropriate number. Defaults to 3.
 ###customize(htmlString)###
-Sets the layout of each list item in the dropdown. ***htmlString*** is of type **String** and will be parsed and wrapped in a `<li>` tag, then placed within a list. An event handler will be registered to the list item for when an item is selected. Defaults to a single `<p>` tag containing the first **String** within the appropriate item in the dataset. Currently, only way to access the data (for layout) is to use `data` followed by any attribute your aware of, for instance: `data.firstName`.
+Sets the layout of each list item in the dropdown. ***htmlString*** is of type **String** and will be parsed and wrapped in a `<li>` tag, then placed within a list. An event handler will be registered to the list item for when an item is selected. Defaults to a single `<span>` tag containing the first **String** within the appropriate item in the dataset. Currently, only way to access the data (for layout) is to use `data` followed by any attribute your aware of, for instance: `"<span>data.firstName</span>"`.
 ###setHighlightColor(color)###
 Sets the color of a list item when focused on. ***color*** is of type **String** and is a **CSS** appropriate color value. Defaults to rgba(33, 150, 243, 0.4).
 ###showBold(bool)###
