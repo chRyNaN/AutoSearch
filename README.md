@@ -64,6 +64,7 @@ Examples
 var search = new AutoSearch(document.getElementById("navbar-search"));
 var arr = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 search.localSource(arr);
+```
 
 API Reference
 ==========
