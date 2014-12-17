@@ -116,6 +116,8 @@ Sets the layout of each list item in the dropdown. ***htmlString*** is of type *
 Sets the color of a list item when focused on. ***color*** is of type **String** and is a **CSS** appropriate color value. Defaults to `rgba(33, 150, 243, 0.4)`.
 ###showBold(bool)###
 States whether or not to display the matching items in the dropdown in bold. ***bool*** is of type **Boolean**. Defaults to true.
+###searchAttributes(a)###
+States which attributes to search for when filtering the data. ***a*** is an **Array** containing strings which correctly match attributes (keys) within the each returned object from the remote resource. ***a*** can also be of type **String**, in which case it will be added to an array. 
 
 Event Handlers
 ==========
