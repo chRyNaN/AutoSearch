@@ -66,6 +66,31 @@ var arr = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine
 search.localSource(arr);
 ```
 
+###Remote###
+```javascript
+var search = new AutoSearch(document.getElementById("navbar-search"));
+search.remoteSource("http://www.omdbapi.com/?t="); //open movie database api
+``` 
+
+###Custom Dropdown Item Layou###
+```javascript
+var search = new AutoSearch(document.getElementById("navbar-search"));
+search.remoteSource("httop://www.omdbapi.com/?t="); //open movie database api
+//custom layout with html string
+htmlString = '<div>' +
+				'<div class="row-picture">' + 
+					'<img class="circle" src="data.Poster" alt="icon"></img>' +
+				'</div>' +
+				'<div class="row-content">' +
+					'<p class="list-group-item-text">data.Title</p>' +
+				'</div>' +
+			  '</div>';
+search.customize(htmlString);
+```
+* To include filtered remote data, simply include the word *data* followed by a dot and the attribute. For instance: `data.Title`.
+* Keep data access within the containing elements surrounding quotes. For instance: `'<p>data.Title</p>'`.
+* Currently, does not support nested object access. For instance: `data[movie.title]`.
+
 API Reference
 ==========
 
@@ -96,17 +121,30 @@ States whether or not to display the matching items in the dropdown in bold. ***
 Event Handlers
 ==========
 
+Event handlers can be assigned on the ***AutoSearch*** object, like such: `AutoSearch.onresults = function(event){};` or on the `<input>` element, like such: `inputElement.addEventListener('results', function(event){});`.
+The events are created using the `CustomEvent()` constructor and then are dispatched and passed to the appropriate function. Because of this, the passed information will be within the `event.detail` attribute.
+
 ###onresults###
-Called when results were successfully received from the remote resource. This is called before the results have been filtered. Event.data will contain the results, for instance:
+Called when results were successfully received from the remote resource. This is called before the results have been sorted. `Event.detail` will contain the results, for instance:
 ```javascript
 search.onresults = function(event){
-    var data = event.detail.data;
+    var results = event.detail; //should be an array of one or more objects.
 }
 ```
 ###onsortedremote###
-Called after the remote data has been sorted.
+Called after the remote data has been sorted. `Event.detail` will contain the sorted array of one or more items. Each item within the array, contains a data and distance field. The data field contains the actual object where the distance field contains the objects Levenshtein distance.
+```javascript
+search.onsortedremote = function(event){
+	var obj;
+    for (var i = 0; i < results.length; i++){
+    	obj = results[i];
+    	obj.data; //access all the internal information of the result item
+    	obj.distance; //access the computed levenshtein distance between this object and the entered input
+    }
+}
+```
 ###onsortedlocal###
-Called after the local data has been sorted.
+Called after the local data has been sorted. Very similar to the `onsortedremote` event listener, except the `Event.detail` contains only the sorted local items.
 ###onselected###
-Called when an item has been selected. Either from a click or the enter key when highlighted. Event.data will contain the selected items attributes.
+Called when an item has been selected. Either from a mouse click or the enter key when the item was highlighted. `Event.data` will contain the selected items attributes.
 
