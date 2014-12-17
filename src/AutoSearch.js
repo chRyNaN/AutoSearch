@@ -103,19 +103,20 @@ var AutoSearch = (function(element){
 	function filter(data){
 		var obj, temp;
 		for (var i = 0; i < data.length; i++){
+			temp = data[i];
 			obj = {};
 			obj.data = data[i];
 			if (attrs.length < 1){
 				var keys = Object.keys(data[i]);
-				obj.distance = getDistance(keys[0].substring(0, input.length), input);
+				obj.distance = (typeof temp[keys[0]] !== "string" || temp[keys[0]] == null) ?
+						getDistance("", input) : getDistance(temp[keys[0]], input);
 				data[i] = obj;
 			}else{
 				for (var j = 0; j < attrs.length; j++){
-					temp = data[i];
 					if (j != 0){
-						obj.distance = Math.min(obj.distance, getDistance(temp[attrs[j]].substring(0, input.length)));
+						obj.distance = Math.min(obj.distance, getDistance(temp[attrs[j]], input));
 					}else{
-						obj.distance = getDistance(temp[attrs[j]].substring(0, input.length));
+						obj.distance = getDistance(temp[attrs[j]], input);
 					}
 					data[i] = obj;
 				}
@@ -141,18 +142,19 @@ var AutoSearch = (function(element){
 					str = "<span>" + d[attrs[0]] + "</span>";
 				}
 			}else{
-				var endingArray = [];
-				str = htmlString.replace(/data(?=\.|\[)/, function(match, offset, string){
+				var endingArray = []; 
+				str = htmlString.replace(/data(?=\.|\[)/g
+						, function(match, offset, string){
 					var endIndex = string.substring(offset).search(/\]|\s|</) + offset;
 					var ending = string.substring(offset + match.length, endIndex + 1);//last parameter is exclusive
 					if (endingArray.indexOf(ending) == -1) endingArray.push(ending);
 					return d[ending.substring(1, ending.length - 1)];
 				});
 				//now remove all the endings, ex: .firstName
-				for (var i = 0; i < endingArray.length; i++){
-					endingArray[i] = (endingArray[i].charAt(endingArray[i].length - 1) === "<") ? 
-							endingArray[i].substring(0, endingArray[i].length - 1) : endingArray[i];
-					str = str.replace(endingArray[i], "");
+				for (var j = 0; j < endingArray.length; j++){
+					var en = endingArray[j];
+					en = (en.charAt(en.length - 1) !== "]") ? en.substring(0, en.length - 1) : en;
+					str = str.replace(en, "");
 				}
 			}
 			li = document.createElement("li");
@@ -271,13 +273,15 @@ var AutoSearch = (function(element){
 	}
 
 	function needsUpdate(){
-		if (typeof cache === 'undefined' || cache.length <= 1 || cache[0].distance < 0.5) return true;
-		return false;
+		//TODO need way to correctly know when to update the cache
+		return true;
+		//if (typeof cache === 'undefined' || cache.length <= 1 || cache[0].distance > startAmount + 1) return true;
+		//return false;
 	}
 
 	function inputEvent(event){
 		input = event.target.value;
-		if (input.length > startAmount){
+		if (input.length >= startAmount){
 			if (local.length < 1 && remoteLocation.length < 1) return; //nothing to search
 			if (remoteLocation.length >= 1){//remote
 				if (needsUpdate()){
