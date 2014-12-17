@@ -10,8 +10,7 @@ The reason for this auto-complete implementation is to provide a very simple and
 
 Work Needed
 ==========
-
-* Fix customize method. Need way to access data. 
+ 
 * Find way to get dropdown to work outside of navbar.
 
 Development Rules
@@ -57,7 +56,7 @@ Examples
 ```
 * Make sure **NOT** to include Bootstrap's *data-toggle="dropdown"*. ***AutoSearch*** manually opens and closes the dropdown when needed.
 * Make sure to include *autocomplete="off"*. This cancels the browsers default cached results from displaying. 
-* The above code will place a input into a navigation bar. 
+* The above code will place an input into a navigation bar. 
 
 ###Local###
 ```javascript
@@ -72,12 +71,12 @@ var search = new AutoSearch(document.getElementById("navbar-search"));
 search.remoteSource("http://www.omdbapi.com/?t="); //open movie database api
 ``` 
 
-###Custom Dropdown Item Layou###
+###Custom Dropdown Item Layout###
 ```javascript
 var search = new AutoSearch(document.getElementById("navbar-search"));
 search.remoteSource("httop://www.omdbapi.com/?t="); //open movie database api
 //custom layout with html string
-htmlString = '<div>' +
+var htmlString = '<div>' +
 				'<div class="row-picture">' + 
 					'<img class="circle" src="data.Poster" alt="icon"></img>' +
 				'</div>' +
@@ -89,7 +88,7 @@ search.customize(htmlString);
 ```
 * To include filtered remote data, simply include the word *data* followed by a dot and the attribute. For instance: `data.Title`.
 * Keep data access within the containing elements surrounding quotes. For instance: `'<p>data.Title</p>'`.
-* Currently, does not support nested object access. For instance: `data[movie.title]`.
+* Currently, does **not** support nested object access. For instance: `data[movie.title]`.
 
 API Reference
 ==========
@@ -112,16 +111,16 @@ Sets the local data. ***source*** is an **Array** which contains the data to be 
 ###setMinCharacters(amount)###
 Sets the amount of characters entered into the `<input>` element needed to perform the search. ***amount*** is of type **Number** but will be lenient and allow a **String** to be entered. In this case, the **String** will be converted to the appropriate number. Defaults to 3.
 ###customize(htmlString)###
-Sets the layout of each list item in the dropdown. ***htmlString*** is of type **String** and will be parsed and wrapped in a `<li>` tag, then placed within a list. An event handler will be registered to the list item for when an item is selected. Defaults to a single `<span>` tag containing the first **String** within the appropriate item in the dataset. Currently, only way to access the data (for layout) is to use `data` followed by any attribute your aware of, for instance: `"<span>data.firstName</span>"`.
+Sets the layout of each list item in the dropdown. ***htmlString*** is of type **String** and will be parsed and wrapped in a `<li>` tag, then placed within a list. An event handler will be registered to the list item for when an item is selected. Defaults to a single `<span>` tag containing the first **String** within the appropriate item in the dataset. Currently, only way to access the data (for layout) is to use `data` followed by any attribute you're aware of, for instance: `"<span>data.firstName</span>"`.
 ###setHighlightColor(color)###
-Sets the color of a list item when focused on. ***color*** is of type **String** and is a **CSS** appropriate color value. Defaults to rgba(33, 150, 243, 0.4).
+Sets the color of a list item when focused on. ***color*** is of type **String** and is a **CSS** appropriate color value. Defaults to `rgba(33, 150, 243, 0.4)`.
 ###showBold(bool)###
 States whether or not to display the matching items in the dropdown in bold. ***bool*** is of type **Boolean**. Defaults to true.
 
 Event Handlers
 ==========
 
-Event handlers can be assigned on the ***AutoSearch*** object, like such: `AutoSearch.onresults = function(event){};` or on the `<input>` element, like such: `inputElement.addEventListener('results', function(event){});`.
+Event handlers can be assigned to the ***AutoSearch*** object, like such: `AutoSearch.onresults = function(event){};` or to the `<input>` element, like such: `inputElement.addEventListener('results', function(event){});`.
 The events are created using the `CustomEvent()` constructor and then are dispatched and passed to the appropriate function. Because of this, the passed information will be within the `event.detail` attribute.
 
 ###onresults###
@@ -146,5 +145,5 @@ search.onsortedremote = function(event){
 ###onsortedlocal###
 Called after the local data has been sorted. Very similar to the `onsortedremote` event listener, except the `Event.detail` contains only the sorted local items.
 ###onselected###
-Called when an item has been selected. Either from a mouse click or the enter key when the item was highlighted. `Event.data` will contain the selected items attributes.
+Called when an item has been selected. Either from a mouse click or the enter key when the item was highlighted. `Event.detail` will contain the selected items attributes.
 
