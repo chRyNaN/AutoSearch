@@ -8,7 +8,7 @@ var AutoSearch = (function(element){
 	
 	function init(){
 		if (typeof $ === 'undefined'){
-			console.log("JQuery is a required dependancy.");
+			console.error("JQuery is a required dependancy.");
 			return;
 		}else if (typeof $.fn.dropdown === 'undefined'){
 			console.error("Bootstrap is a required dependancy.");
@@ -48,7 +48,6 @@ var AutoSearch = (function(element){
 			onselected: null,
 			//public methods
 			remoteSource: function(source){
-				console.log("remoteSource: " + source);
 				remoteLocation = source;
 			},
 			localSource: function(source){
@@ -84,7 +83,6 @@ var AutoSearch = (function(element){
 					temp.push(data);
 					data = temp;
 				}
-				console.log("search results: " + JSON.stringify(data));
 				triggerEvent("results", data);
 				if (local.length >= 1){//local and remote
 					var d = [];
@@ -279,7 +277,6 @@ var AutoSearch = (function(element){
 
 	function inputEvent(event){
 		input = event.target.value;
-		console.log("input event: input: " + input);
 		if (input.length > startAmount){
 			if (local.length < 1 && remoteLocation.length < 1) return; //nothing to search
 			if (remoteLocation.length >= 1){//remote
@@ -347,10 +344,8 @@ var AutoSearch = (function(element){
 		var current;
 		//remove items selected
 		unSelectAllItems();
-		console.log("keycode = " + key);
 		switch(key){
 		case (40):
-			console.log("key = 40");
 			//down arrow was pressed
 			if (typeof selected === 'undefined' || selected == searchDropdown.lastChild){
 				current = listItems[0];
