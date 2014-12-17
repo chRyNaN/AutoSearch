@@ -68,6 +68,11 @@ var AutoSearch = (function(element){
 				bold = bool;
 			},
 			searchAttributes: function(a){
+				if (Array.isArray(a)){
+					attrs = a;
+				}else{
+					attrs.push(a);
+				}
 				attrs = a;
 			}
 	};
