@@ -73,7 +73,6 @@ var AutoSearch = (function(element){
 				}else{
 					attrs.push(a);
 				}
-				attrs = a;
 			}
 	};
 	
@@ -118,10 +117,13 @@ var AutoSearch = (function(element){
 				data[i] = obj;
 			}else{
 				for (var j = 0; j < attrs.length; j++){
-					if (j != 0){
-						obj.distance = Math.min(obj.distance, getDistance(temp[attrs[j]], input));
-					}else{
-						obj.distance = getDistance(temp[attrs[j]], input);
+					var t = temp[attrs[j]];
+					if (typeof t !== "undefined"){
+						if (j != 0){
+							obj.distance = Math.min(obj.distance, getDistance(t, input));
+						}else{
+							obj.distance = getDistance(t, input);
+						}
 					}
 					data[i] = obj;
 				}
